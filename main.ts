@@ -99,10 +99,14 @@ const inDir = process.env.MAKEFUN_INPUT_DIR || "/input";
 const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
 const instances = [];
 if (fs.existsSync(inDir)) {
-  if (fs.existsSync(path.join(inDir, "program.bin"))) {
+  // "root" is the reserved id for the root instance: a subdirectory
+  // literally named root must not shadow it when a root program exists.
+  const hasRoot = fs.existsSync(path.join(inDir, "program.bin"));
+  if (hasRoot) {
     instances.push({ id: "root", dir: inDir });
   }
   for (const e of fs.readdirSync(inDir, { withFileTypes: true })) {
+    if (e.name === "root" && hasRoot) continue;
     if (e.isDirectory() && fs.existsSync(path.join(inDir, e.name, "program.bin"))) {
       instances.push({ id: e.name, dir: path.join(inDir, e.name) });
     }
